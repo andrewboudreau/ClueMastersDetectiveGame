@@ -120,6 +120,11 @@ public class Grid(Token[,]? tokens = default)
 
     public static Grid FromArray(Token[][] tokens)
     {
+        if (tokens.Length != 3 || tokens[0].Length != 3)
+        {
+            throw new InvalidOperationException("Grid must be 3x3");
+        }
+
         int rows = tokens.Length;
         int cols = tokens[0].Length;
         var grid = new Grid(new Token[rows, cols]);
@@ -190,19 +195,17 @@ public class Solution(Grid grid)
 {
     public Grid Grid { get; set; } = grid;
 
-    public bool Check(Grid userGrid, List<Clue> clues)
+    public bool Check(Grid attempt)
     {
-        foreach (var clue in clues)
+        // check if the attempt matches the solution
+        for (int row = 0; row < Grid.Cells.GetLength(0); row++)
         {
-            var found = clue.CheckAgainst(userGrid);
-
-            if (clue.IsNegative && found)
+            for (int col = 0; col < Grid.Cells.GetLength(1); col++)
             {
-                return false;
-            }
-            else if (!found)
-            {
-                return false;
+                if (Grid.Cells[row, col] != attempt.Cells[row, col])
+                {
+                    return false;
+                }
             }
         }
 

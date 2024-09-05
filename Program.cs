@@ -3,6 +3,12 @@ using ClueMastersDetectiveGame;
 var builder = WebApplication.CreateBuilder(args);
 var app = builder.Build();
 
+
+var level1 = LevelRepository.Level1();
+
+level1.Solution.Check()
+
+
 app.MapGet("/levels", () => Results.Ok(LevelRepository.Levels));
 
 app.MapGet("/levels/{id:int}", (int id) =>
