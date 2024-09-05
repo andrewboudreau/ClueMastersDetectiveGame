@@ -22,6 +22,54 @@ public class Token(TokenShape shape, TokenColor color)
     public TokenColor Color { get; set; } = color;
     public bool Negative { get; set; } = false;
 
+    public bool IsColorless => Color == TokenColor.Unknown;
+    public bool IsShapeless => Shape == TokenShape.Unknown;
+    public bool IsAny => IsColorless && IsShapeless;
+
+    public bool IsColor(TokenColor color) => Color == color;
+    public bool IsShape(TokenShape shape) => Shape == shape;
+
+    public override bool Equals(object? obj)
+    {
+        if (obj is not Token other)
+            return false;
+
+        if (Negative && other.Negative)
+            return false;
+
+        bool result;
+        if (IsAny || other.IsAny)
+        {
+            result = true;
+        }
+        else if (IsColorless || other.IsColorless)
+        {
+            result = Shape == other.Shape;
+        }
+        else if (IsShapeless || other.IsShapeless)
+        {
+            result = Color == other.Color;
+        }
+        else
+        {
+            result = Shape == other.Shape && Color == other.Color;
+        }
+
+
+        if (Negative || other.Negative)
+        {
+            return !result;
+        }
+
+        return result;
+    }
+
+    public override int GetHashCode() => HashCode.Combine(Shape, Color, Negative);
+
+    public static bool operator ==(Token left, Token right) => Equals(left, right);
+
+    public static bool operator !=(Token left, Token right) => !Equals(left, right);
+
     public readonly static Token RedBone = new(TokenShape.Bone, TokenColor.Red);
     public readonly static Token RedBall = new(TokenShape.Ball, TokenColor.Red);
     public readonly static Token RedBowl = new(TokenShape.Bowl, TokenColor.Red);
@@ -40,6 +88,8 @@ public class Token(TokenShape shape, TokenColor color)
     public readonly static Token ColorlessBone = new(TokenShape.Bone, TokenColor.Unknown);
     public readonly static Token ColorlessBall = new(TokenShape.Ball, TokenColor.Unknown);
     public readonly static Token ColorlessBowl = new(TokenShape.Bowl, TokenColor.Unknown);
+
+    public readonly static Token Any = new(TokenShape.Unknown, TokenColor.Unknown);
 }
 
 public class Grid(Token[,]? tokens = default)
@@ -117,14 +167,14 @@ public class Clue
                 {
                     if (IsNegative)
                     {
-                        if (clueToken.Shape == gridToken?.Shape && clueToken.Color == gridToken?.Color)
+                        if (clueToken.Shape == gridToken.Shape && clueToken.Color == gridToken.Color)
                         {
                             return false; // A negative clue pattern was found, invalid solution
                         }
                     }
                     else
                     {
-                        if (clueToken.Shape != gridToken?.Shape || clueToken.Color != gridToken?.Color)
+                        if (clueToken.Shape != gridToken.Shape || clueToken.Color != gridToken.Color)
                         {
                             return false; // A positive clue pattern does not match
                         }
@@ -144,30 +194,30 @@ public class Solution(Grid grid)
     {
         foreach (var clue in clues)
         {
-            if (!clue.CheckAgainst(userGrid))
-            {
-                if (!clue.IsNegative)
-                {
-                    return false; // Positive clue not satisfied
-                }
-            }
-        }
+            var found = clue.CheckAgainst(userGrid);
 
-        foreach (var clue in clues)
-        {
-            if (clue.IsNegative && !clue.CheckAgainst(userGrid))
+            if (clue.IsNegative && found)
             {
-                return false; // Negative clue pattern was found
+                return false;
+            }
+            else if (!found)
+            {
+                return false;
             }
         }
 
         return true;
     }
+
+    public static Solution FromArray(Token[][] tokens) => new(Grid.FromArray(tokens));
 }
 
-public class Level(int id, Solution solution, List<Clue> clues)
+public class Level(int id, Solution solution, params Clue[] clues)
 {
+    public Level(int id, Solution solution, Clue clue)
+        : this(id, solution, [clue]) { }
+
     public int Id { get; private set; } = id;
     public Solution Solution { get; private set; } = solution;
-    public List<Clue> Clues { get; private set; } = clues;
+    public List<Clue> Clues { get; private set; } = [.. clues];
 }
