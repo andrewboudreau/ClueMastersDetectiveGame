@@ -3,6 +3,7 @@ using ClueMastersDetectiveGame;
 var builder = WebApplication.CreateBuilder(args);
 var app = builder.Build();
 
+<<<<<<< HEAD
 // Validation checks
 var level1 = LevelRepository.Level1();
 Grid solutionCopy = new(level1.Solution.Grid.Tokens.Clone() as Token[,]);
@@ -25,6 +26,13 @@ foreach (var clue in level1.Clues)
 }
 
 Console.WriteLine("Level 1 validation passed successfully.");
+=======
+
+var level1 = LevelRepository.Level1();
+
+level1.Solution.Check()
+
+>>>>>>> 9cd9f411f3b9a865de61a37a37459f19c2e2e468
 
 app.MapGet("/levels", () => Results.Ok(LevelRepository.Levels));
 

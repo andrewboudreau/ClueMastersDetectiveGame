@@ -16,16 +16,10 @@ public enum TokenColor
     Blue
 }
 
-public class Token
+public class Token(TokenShape shape, TokenColor color)
 {
-    public TokenShape Shape { get; set; }
-    public TokenColor Color { get; set; }
-
-    public Token(TokenShape shape, TokenColor color)
-    {
-        Shape = shape;
-        Color = color;
-    }
+    public TokenShape Shape { get; set; } = shape;
+    public TokenColor Color { get; set; } = color;
 
     public bool IsColorless => Color == TokenColor.Unknown;
     public bool IsShapeless => Shape == TokenShape.Unknown;
@@ -59,14 +53,17 @@ public class Token
     public readonly static Token RedBone = new(TokenShape.Shape1, TokenColor.Red);
     public readonly static Token RedBall = new(TokenShape.Shape2, TokenColor.Red);
     public readonly static Token RedBowl = new(TokenShape.Shape3, TokenColor.Red);
+    public readonly static Token RedShape = new(TokenShape.Unknown, TokenColor.Red);
 
     public readonly static Token GreenBone = new(TokenShape.Shape1, TokenColor.Green);
     public readonly static Token GreenBall = new(TokenShape.Shape2, TokenColor.Green);
     public readonly static Token GreenBowl = new(TokenShape.Shape3, TokenColor.Green);
+    public readonly static Token GreenShape = new(TokenShape.Unknown, TokenColor.Green);
 
     public readonly static Token BlueBone = new(TokenShape.Shape1, TokenColor.Blue);
     public readonly static Token BlueBall = new(TokenShape.Shape2, TokenColor.Blue);
     public readonly static Token BlueBowl = new(TokenShape.Shape3, TokenColor.Blue);
+    public readonly static Token BlueShape = new(TokenShape.Unknown, TokenColor.Blue);
 
     public readonly static Token ColorlessBone = new(TokenShape.Shape1, TokenColor.Unknown);
     public readonly static Token ColorlessBall = new(TokenShape.Shape2, TokenColor.Unknown);
@@ -75,14 +72,9 @@ public class Token
     public readonly static Token Any = new(TokenShape.Unknown, TokenColor.Unknown);
 }
 
-public class Grid
+public class Grid(Token[,]? tokens = null)
 {
-    public Token[,] Tokens { get; set; }
-
-    public Grid(Token[,]? tokens = null)
-    {
-        Tokens = tokens ?? new Token[3, 3];
-    }
+    public Token[,] Tokens { get; set; } = tokens ?? new Token[3, 3];
 
     public void PlaceToken(int row, int col, Token token) => Tokens[row, col] = token;
 
@@ -90,6 +82,11 @@ public class Grid
 
     public static Grid FromArray(Token[][] tokens)
     {
+        if (tokens.Length != 3 || tokens[0].Length != 3)
+        {
+            throw new InvalidOperationException("Grid must be 3x3");
+        }
+
         int rows = tokens.Length;
         int cols = tokens[0].Length;
         var grid = new Grid(new Token[rows, cols]);
@@ -106,20 +103,12 @@ public class Grid
     }
 }
 
-public class Clue
+public class Clue(Token[][] pattern, int offsetRow = 0, int offsetCol = 0, bool isNegative = false)
 {
-    public Token[][] Pattern { get; set; }
-    public int OffsetRow { get; set; }
-    public int OffsetCol { get; set; }
-    public bool IsNegative { get; set; }
-
-    public Clue(Token[][] pattern, int offsetRow = 0, int offsetCol = 0, bool isNegative = false)
-    {
-        Pattern = pattern;
-        OffsetRow = offsetRow;
-        OffsetCol = offsetCol;
-        IsNegative = isNegative;
-    }
+    public Token[][] Pattern { get; set; } = pattern;
+    public int OffsetRow { get; set; } = offsetRow;
+    public int OffsetCol { get; set; } = offsetCol;
+    public bool IsNegative { get; set; } = isNegative;
 
     public bool Validate(Grid userGrid)
     {
@@ -161,9 +150,9 @@ public class Solution(Grid grid)
                 var token = Grid.GetToken(row, col);
                 var userToken = userGrid.GetToken(row, col);
 
-                if (token.Equals(userToken))
+                if (!token.Equals(userToken))
                 {
-                    continue;
+                    return false;
                 }
             }
         }
@@ -174,18 +163,11 @@ public class Solution(Grid grid)
     public static Solution FromArray(Token[][] tokens) => new(Grid.FromArray(tokens));
 }
 
-public class Level
+public class Level(int id, Solution solution, params Clue[] clues)
 {
-    public int Id { get; private set; }
-    public Solution Solution { get; private set; }
-    public List<Clue> Clues { get; private set; }
-
-    public Level(int id, Solution solution, params Clue[] clues)
-    {
-        Id = id;
-        Solution = solution;
-        Clues = new List<Clue>(clues);
-    }
+    public int Id { get; private set; } = id;
+    public Solution Solution { get; private set; } = solution;
+    public List<Clue> Clues { get; private set; } = new List<Clue>(clues);
 
     public bool Validate(Grid userGrid)
     {
