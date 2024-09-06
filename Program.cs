@@ -5,10 +5,10 @@ var app = builder.Build();
 
 // Validation checks
 var level1 = LevelRepository.Level1();
-var solutionCopy = new Grid(level1.Solution.Grid.Cells.Clone() as Token[,]);
+Grid solutionCopy = new(level1.Solution.Grid.Tokens.Clone() as Token[,]);
 
 // Check if the solution is valid
-bool isSolutionValid = level1.Solution.Check(solutionCopy, level1.Clues);
+bool isSolutionValid = level1.Solution.Validate(solutionCopy, level1.Clues);
 if (!isSolutionValid)
 {
     throw new InvalidOperationException("Level 1 solution is not valid against its own clues.");
@@ -17,7 +17,7 @@ if (!isSolutionValid)
 // Check each clue individually
 foreach (var clue in level1.Clues)
 {
-    bool isClueValid = clue.CheckAgainst(solutionCopy);
+    bool isClueValid = clue.Validate(solutionCopy);
     if (!isClueValid)
     {
         throw new InvalidOperationException($"A clue in Level 1 is not valid against the solution.");
@@ -46,7 +46,7 @@ app.MapPost("/levels/{id:int}/check", (int id, Grid userGrid) =>
         return Results.NotFound();
     }
 
-    var isCorrect = puzzle.Solution.Check(userGrid, puzzle.Clues);
+    var isCorrect = puzzle.Solution.Validate(userGrid, puzzle.Clues);
     return Results.Ok(new { isCorrect });
 });
 

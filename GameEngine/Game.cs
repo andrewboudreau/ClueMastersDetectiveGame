@@ -3,9 +3,9 @@
 public enum TokenShape
 {
     Unknown,
-    Bone,
-    Ball,
-    Bowl
+    Shape1,
+    Shape2,
+    Shape3
 }
 
 public enum TokenColor
@@ -16,11 +16,16 @@ public enum TokenColor
     Blue
 }
 
-public class Token(TokenShape shape, TokenColor color)
+public class Token
 {
-    public TokenShape Shape { get; set; } = shape;
-    public TokenColor Color { get; set; } = color;
-    public bool Negative { get; set; } = false;
+    public TokenShape Shape { get; set; }
+    public TokenColor Color { get; set; }
+
+    public Token(TokenShape shape, TokenColor color)
+    {
+        Shape = shape;
+        Color = color;
+    }
 
     public bool IsColorless => Color == TokenColor.Unknown;
     public bool IsShapeless => Shape == TokenShape.Unknown;
@@ -34,89 +39,54 @@ public class Token(TokenShape shape, TokenColor color)
         if (obj is not Token other)
             return false;
 
-        if (Negative && other.Negative)
-            return false;
-
-        bool result;
         if (IsAny || other.IsAny)
-        {
-            result = true;
-        }
-        else if (IsColorless || other.IsColorless)
-        {
-            result = Shape == other.Shape;
-        }
-        else if (IsShapeless || other.IsShapeless)
-        {
-            result = Color == other.Color;
-        }
-        else
-        {
-            result = Shape == other.Shape && Color == other.Color;
-        }
+            return true;
 
+        if (IsColorless || other.IsColorless)
+            return Shape == other.Shape;
 
-        if (Negative || other.Negative)
-        {
-            return !result;
-        }
+        if (IsShapeless || other.IsShapeless)
+            return Color == other.Color;
 
-        return result;
+        return Shape == other.Shape && Color == other.Color;
     }
 
-    public override int GetHashCode() => HashCode.Combine(Shape, Color, Negative);
+    public override int GetHashCode() => HashCode.Combine(Shape, Color);
 
     public static bool operator ==(Token left, Token right) => Equals(left, right);
-
     public static bool operator !=(Token left, Token right) => !Equals(left, right);
 
-    public readonly static Token RedBone = new(TokenShape.Bone, TokenColor.Red);
-    public readonly static Token RedBall = new(TokenShape.Ball, TokenColor.Red);
-    public readonly static Token RedBowl = new(TokenShape.Bowl, TokenColor.Red);
-    public readonly static Token RedShape = new(TokenShape.Unknown, TokenColor.Red);
+    public readonly static Token RedBone = new(TokenShape.Shape1, TokenColor.Red);
+    public readonly static Token RedBall = new(TokenShape.Shape2, TokenColor.Red);
+    public readonly static Token RedBowl = new(TokenShape.Shape3, TokenColor.Red);
 
-    public readonly static Token GreenBone = new(TokenShape.Bone, TokenColor.Green);
-    public readonly static Token GreenBall = new(TokenShape.Ball, TokenColor.Green);
-    public readonly static Token GreenBowl = new(TokenShape.Bowl, TokenColor.Green);
-    public readonly static Token GreenShape = new(TokenShape.Unknown, TokenColor.Green);
+    public readonly static Token GreenBone = new(TokenShape.Shape1, TokenColor.Green);
+    public readonly static Token GreenBall = new(TokenShape.Shape2, TokenColor.Green);
+    public readonly static Token GreenBowl = new(TokenShape.Shape3, TokenColor.Green);
 
-    public readonly static Token BlueBone = new(TokenShape.Bone, TokenColor.Blue);
-    public readonly static Token BlueBall = new(TokenShape.Ball, TokenColor.Blue);
-    public readonly static Token BlueBowl = new(TokenShape.Bowl, TokenColor.Blue);
-    public readonly static Token BlueShape = new(TokenShape.Unknown, TokenColor.Blue);
+    public readonly static Token BlueBone = new(TokenShape.Shape1, TokenColor.Blue);
+    public readonly static Token BlueBall = new(TokenShape.Shape2, TokenColor.Blue);
+    public readonly static Token BlueBowl = new(TokenShape.Shape3, TokenColor.Blue);
 
-    public readonly static Token ColorlessBone = new(TokenShape.Bone, TokenColor.Unknown);
-    public readonly static Token ColorlessBall = new(TokenShape.Ball, TokenColor.Unknown);
-    public readonly static Token ColorlessBowl = new(TokenShape.Bowl, TokenColor.Unknown);
+    public readonly static Token ColorlessBone = new(TokenShape.Shape1, TokenColor.Unknown);
+    public readonly static Token ColorlessBall = new(TokenShape.Shape2, TokenColor.Unknown);
+    public readonly static Token ColorlessBowl = new(TokenShape.Shape3, TokenColor.Unknown);
 
     public readonly static Token Any = new(TokenShape.Unknown, TokenColor.Unknown);
 }
 
-public class Grid(Token[,]? tokens = default)
+public class Grid
 {
-    public Token[,] Cells { get; set; }
-        = tokens ?? new Token[3, 3];
+    public Token[,] Tokens { get; set; }
 
-    public void PlaceToken(int row, int col, Token token)
+    public Grid(Token[,]? tokens = null)
     {
-        Cells[row, col] = token;
+        Tokens = tokens ?? new Token[3, 3];
     }
 
-    public Token GetToken(int row, int col)
-    {
-        return Cells[row, col];
-    }
+    public void PlaceToken(int row, int col, Token token) => Tokens[row, col] = token;
 
-    public IEnumerable<(Token Token, int X, int Y)> Pattern()
-    {
-        for (int row = 0; row < Cells.GetLength(0); row++)
-        {
-            for (int col = 0; col < Cells.GetLength(1); col++)
-            {
-                yield return (Cells[row, col], col, row);
-            }
-        }
-    }
+    public Token GetToken(int row, int col) => Tokens[row, col];
 
     public static Grid FromArray(Token[][] tokens)
     {
@@ -128,7 +98,7 @@ public class Grid(Token[,]? tokens = default)
         {
             for (int col = 0; col < cols; col++)
             {
-                grid.Cells[row, col] = tokens[row][col];
+                grid.Tokens[row, col] = tokens[row][col];
             }
         }
 
@@ -151,10 +121,10 @@ public class Clue
         IsNegative = isNegative;
     }
 
-    public bool CheckAgainst(Grid userGrid)
+    public bool Validate(Grid userGrid)
     {
-        int patternRows = Pattern.GetLength(0);
-        int patternCols = Pattern.GetLength(1);
+        int patternRows = Pattern.Length;
+        int patternCols = Pattern[0].Length;
 
         for (int row = 0; row < patternRows; row++)
         {
@@ -163,46 +133,38 @@ public class Clue
                 var clueToken = Pattern[row][col];
                 var gridToken = userGrid.GetToken(row + OffsetRow, col + OffsetCol);
 
-                if (clueToken != null)
-                {
-                    if (IsNegative)
-                    {
-                        if (clueToken.Shape == gridToken.Shape && clueToken.Color == gridToken.Color)
-                        {
-                            return false; // A negative clue pattern was found, invalid solution
-                        }
-                    }
-                    else
-                    {
-                        if (clueToken.Shape != gridToken.Shape || clueToken.Color != gridToken.Color)
-                        {
-                            return false; // A positive clue pattern does not match
-                        }
-                    }
-                }
+                if (IsNegative && clueToken.Equals(gridToken))
+                    return false;
+
+                if (!IsNegative && !clueToken.Equals(gridToken))
+                    return false;
             }
         }
+
         return true;
     }
 }
 
 public class Solution(Grid grid)
 {
-    public Grid Grid { get; set; } = grid;
+    public Grid Grid { get; private set; } = grid;
 
-    public bool Check(Grid userGrid, List<Clue> clues)
+    public bool Validate(Grid userGrid)
     {
-        foreach (var clue in clues)
-        {
-            var found = clue.CheckAgainst(userGrid);
+        var rows = Grid.Tokens.GetLength(0);
+        var cols = Grid.Tokens.GetLength(1);
 
-            if (clue.IsNegative && found)
+        for (int row = 0; row < rows; row++)
+        {
+            for (int col = 0; col < cols; col++)
             {
-                return false;
-            }
-            else if (!found)
-            {
-                return false;
+                var token = Grid.GetToken(row, col);
+                var userToken = userGrid.GetToken(row, col);
+
+                if (token.Equals(userToken))
+                {
+                    continue;
+                }
             }
         }
 
@@ -212,12 +174,30 @@ public class Solution(Grid grid)
     public static Solution FromArray(Token[][] tokens) => new(Grid.FromArray(tokens));
 }
 
-public class Level(int id, Solution solution, params Clue[] clues)
+public class Level
 {
-    public Level(int id, Solution solution, Clue clue)
-        : this(id, solution, [clue]) { }
+    public int Id { get; private set; }
+    public Solution Solution { get; private set; }
+    public List<Clue> Clues { get; private set; }
 
-    public int Id { get; private set; } = id;
-    public Solution Solution { get; private set; } = solution;
-    public List<Clue> Clues { get; private set; } = [.. clues];
+    public Level(int id, Solution solution, params Clue[] clues)
+    {
+        Id = id;
+        Solution = solution;
+        Clues = new List<Clue>(clues);
+    }
+
+    public bool Validate(Grid userGrid)
+    {
+        foreach (var clue in Clues)
+        {
+            if (!clue.Validate(userGrid))
+            {
+                return false;
+            }
+
+        }
+
+        return Solution.Validate(userGrid);
+    }
 }
