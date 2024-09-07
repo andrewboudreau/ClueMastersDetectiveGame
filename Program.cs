@@ -3,36 +3,32 @@ using ClueMastersDetectiveGame;
 var builder = WebApplication.CreateBuilder(args);
 var app = builder.Build();
 
-<<<<<<< HEAD
-// Validation checks
-var level1 = LevelRepository.Level1();
-Grid solutionCopy = new(level1.Solution.Grid.Tokens.Clone() as Token[,]);
+var levels = new List<Level>() { LevelRepository.Level1(), LevelRepository.Level2() };
 
-// Check if the solution is valid
-bool isSolutionValid = level1.Solution.Validate(solutionCopy, level1.Clues);
-if (!isSolutionValid)
+foreach (var level in levels) 
 {
-    throw new InvalidOperationException("Level 1 solution is not valid against its own clues.");
-}
+    Grid solutionCopy = new(level.Solution.Grid.Tokens.Clone() as Token[,]);
 
-// Check each clue individually
-foreach (var clue in level1.Clues)
-{
-    bool isClueValid = clue.Validate(solutionCopy);
-    if (!isClueValid)
+    // Check if the solution is valid
+    bool isSolutionValid = level.Solution.Validate(solutionCopy);
+    if (!isSolutionValid)
     {
-        throw new InvalidOperationException($"A clue in Level 1 is not valid against the solution.");
+        throw new InvalidOperationException("Level 1 solution is not valid against its own clues.");
     }
+
+    // Check each clue individually
+    foreach (var clue in level.Clues)
+    {
+        bool isClueValid = clue.Validate(solutionCopy);
+        if (!isClueValid)
+        {
+            throw new InvalidOperationException($"A clue in Level 1 is not valid against the solution.");
+        }
+    }
+
+    Console.WriteLine("Level validation passed successfully.");
 }
 
-Console.WriteLine("Level 1 validation passed successfully.");
-=======
-
-var level1 = LevelRepository.Level1();
-
-level1.Solution.Check()
-
->>>>>>> 9cd9f411f3b9a865de61a37a37459f19c2e2e468
 
 app.MapGet("/levels", () => Results.Ok(LevelRepository.Levels));
 
@@ -54,7 +50,7 @@ app.MapPost("/levels/{id:int}/check", (int id, Grid userGrid) =>
         return Results.NotFound();
     }
 
-    var isCorrect = puzzle.Solution.Validate(userGrid, puzzle.Clues);
+    var isCorrect = puzzle.Solution.Validate(userGrid);
     return Results.Ok(new { isCorrect });
 });
 

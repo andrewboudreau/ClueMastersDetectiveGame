@@ -1,4 +1,6 @@
-﻿namespace ClueMastersDetectiveGame;
+﻿using System.Threading.Tasks.Dataflow;
+
+namespace ClueMastersDetectiveGame;
 
 public static class LevelRepository
 {
@@ -28,6 +30,13 @@ public static class LevelRepository
         Levels.Add(Level1());
         Levels.Add(Level2());
         Levels.Add(Level3());
+        Levels.Add(Level4());
+        Levels.Add(Level5());
+        Levels.Add(Level6());
+        Levels.Add(Level7());
+        Levels.Add(Level8());
+        Levels.Add(Level9());
+        Levels.Add(Level10());
     }
 
     public static Level GetLevelById(int id)
@@ -97,6 +106,83 @@ public static class LevelRepository
             new Clue([[Any, Any, Red], [Any, Any, RBone], [Any, Any, CBowl]]),
             new Clue([AnyRow, AnyRow, [CBone, Red, Any]]),
             new Clue([AnyRow, AnyRow, [Any, CBall, Green]])
+        );
+    }
+
+    public static Level Level4()
+    {
+        return new Level(4,
+            Solution.FromArray([
+                [RBowl, RBone, BBall],
+                [GBall, GBone, GBowl],
+                [BBowl, BBone, RBall]
+            ])
+        );
+    }
+
+    public static Level Level5()
+    {
+        return new Level(5,
+            Solution.FromArray([
+                [RBall, GBone, BBowl],
+                [GBowl, BBall, RBone],
+                [BBone, RBowl, GBall]
+            ])
+        );
+    }
+
+    public static Level Level6()
+    {
+        return new Level(6,
+            Solution.FromArray([
+                [GBall, BBone, RBowl],
+                [RBone, GBowl, BBall],
+                [BBowl, RBall, GBone]
+            ])
+        );
+    }
+
+    public static Level Level7()
+    {
+        return new Level(7,
+            Solution.FromArray([
+                [BBowl, GBowl, GBall],
+                [RBowl, BBall, GBone],
+                [RBall, RBone, BBone]
+            ])
+        );
+    }
+
+    public static Level Level8()
+    {
+        return new Level(8,
+            Solution.FromArray([
+                [GBone, RBall, RBowl],
+                [BBall, GBowl, RBone],
+                [BBowl, BBone, GBall]
+            ])
+        );
+    }
+
+    public static Level Level9()
+    {
+        return new Level(9,
+            Solution.FromArray([
+                [RBall, BBone, GBowl],
+                [GBone, RBowl, BBall],
+                [BBowl, GBall, RBone]
+            ])
+        );
+    }
+
+    public static Level Level10()
+    {
+        return new Level(10,
+            Solution.FromArray([
+                [GBall, GBone, GBowl],
+                [RBone, BBowl, BBall],
+                [BBone, RBall, RBowl]
+            ])
         );
     }
 }
