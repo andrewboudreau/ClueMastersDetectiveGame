@@ -1,4 +1,6 @@
-﻿namespace ClueMastersDetectiveGame;
+﻿using System.Text;
+
+namespace ClueMastersDetectiveGame;
 
 public enum TokenShape
 {
@@ -182,4 +184,58 @@ public class Level(int id, Solution solution, params Clue[] clues)
 
         return Solution.Validate(userGrid);
     }
+}
+
+public class ConsoleRenderer
+{
+    private const string RESET = "\u001b[0m";
+    private const string RED = "\u001b[31m";
+    private const string GREEN = "\u001b[32m";
+    private const string BLUE = "\u001b[34m";
+
+    private const char BONE = '§';
+    private const char BALL = 'Θ';
+    private const char BOWL = 'Ứ';
+    private const char EMPTY = ' ';
+
+    public static void Initialize()
+    {
+        Console.OutputEncoding = Encoding.UTF8;
+    }
+
+    public static void RenderGrid(Grid grid)
+    {
+        for (int row = 0; row < 3; row++)
+        {
+            for (int col = 0; col < 3; col++)
+            {
+                RenderToken(grid.GetToken(row, col));
+                Console.Write(col < 2 ? " " : "\n");
+            }
+            Console.WriteLine();
+        }
+    }
+
+    private static void RenderToken(Token token)
+    {
+        string color = GetColorCode(token.Color);
+        char shape = GetTokenShape(token.Shape);
+        Console.Write($"{color}{shape}{RESET}");
+    }
+
+    private static string GetColorCode(TokenColor color) => color switch
+    {
+        TokenColor.Red => RED,
+        TokenColor.Green => GREEN,
+        TokenColor.Blue => BLUE,
+        _ => RESET
+    };
+
+    private static char GetTokenShape(TokenShape shape) => shape switch
+    {
+        TokenShape.Shape1 => BONE,
+        TokenShape.Shape2 => BALL,
+        TokenShape.Shape3 => BOWL,
+        _ => EMPTY
+    };
 }

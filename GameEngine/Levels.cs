@@ -94,7 +94,7 @@ public static class LevelRepository
 
     public static Level Level3()
     {
-        return new Level(2,
+        return new Level(3,
             Solution.FromArray([
                 [ BBall, BBone, RBowl ],
                 [ GBone, GBall, RBone ],
@@ -116,7 +116,9 @@ public static class LevelRepository
                 [RBowl, RBone, BBall],
                 [GBall, GBone, GBowl],
                 [BBowl, BBone, RBall]
-            ])
+            ]),
+            new Clue([[Any, Any], [BBowl]], offsetRow: 2, offsetCol: 0),
+            new Clue([AnyRow, [Any, BBone, Any]], offsetRow: 2, offsetCol: 0)
         );
     }
 

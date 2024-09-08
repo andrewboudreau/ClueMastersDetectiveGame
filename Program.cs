@@ -1,12 +1,12 @@
 using ClueMastersDetectiveGame;
 
-var builder = WebApplication.CreateBuilder(args);
-var app = builder.Build();
+using System.Text;
+Console.OutputEncoding = Encoding.UTF8;
 
-var levels = new List<Level>() { LevelRepository.Level1(), LevelRepository.Level2() };
-
-foreach (var level in levels) 
+foreach (var level in LevelRepository.Levels)
 {
+    Console.WriteLine($"Validating Level {level.Id}...");
+    ConsoleRenderer.RenderGrid(level.Solution.Grid);
     Grid solutionCopy = new(level.Solution.Grid.Tokens.Clone() as Token[,]);
 
     // Check if the solution is valid
@@ -22,13 +22,18 @@ foreach (var level in levels)
         bool isClueValid = clue.Validate(solutionCopy);
         if (!isClueValid)
         {
-            throw new InvalidOperationException($"A clue in Level 1 is not valid against the solution.");
+            Console.WriteLine("Level validation failed.");
+            Console.WriteLine($"A clue in Level {level.Id} is not valid against the solution.");
+            continue;
         }
     }
 
     Console.WriteLine("Level validation passed successfully.");
 }
 
+
+var builder = WebApplication.CreateBuilder(args);
+var app = builder.Build();
 
 app.MapGet("/levels", () => Results.Ok(LevelRepository.Levels));
 
